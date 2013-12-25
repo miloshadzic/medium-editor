@@ -157,18 +157,29 @@ if (typeof module === 'object') {
             return content;
         },
 
+        isBlank: function (str) {
+            return (!str || /^\s*$/.test(str));
+        },
+
+        rootBlock: function (node) {
+            while (node.parentNode.getAttribute('data-medium-element') !== "true") {
+                node = node.parentNode;
+            }
+            return node;
+        },
+
         bindParagraphCreation: function (index) {
             var self = this;
+
+            // function that gets called on every keyup
             this.elements[index].addEventListener('keyup', function (e) {
                 var node = getSelectionStart(),
                     tagName;
-                if (node && node.getAttribute('data-medium-element') && node.children.length === 0
-                        && !(self.options.disableReturn || node.getAttribute('data-disable-return'))) {
-                    document.execCommand('formatBlock', false, 'p');
-                }
+
                 if (e.which === 13 && !e.shiftKey) {
                     node = getSelectionStart();
                     tagName = node.tagName.toLowerCase();
+
                     if (!(self.options.disableReturn || this.getAttribute('data-disable-return'))
                             && tagName !== 'li') {
                         document.execCommand('formatBlock', false, 'p');
@@ -184,8 +195,11 @@ if (typeof module === 'object') {
         bindReturn: function (index) {
             var self = this;
             this.elements[index].addEventListener('keypress', function (e) {
+                var node = getSelectionStart(),
+                    root = self.rootBlock(node);
                 if (e.which === 13) {
-                    if (self.options.disableReturn || this.getAttribute('data-disable-return')) {
+                    if (self.options.disableReturn || this.getAttribute('data-disable-return') ||
+                            (self.isBlank(root.textContent) || (!!root.previousElementSibling && self.isBlank(root.previousElementSibling.textContent)) || (!!root.nextElementSibling && self.isBlank(root.nextElementSibling.textContent)))) {
                         e.preventDefault();
                     }
                 }
