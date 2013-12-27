@@ -176,6 +176,11 @@ if (typeof module === 'object') {
                 var node = getSelectionStart(),
                     tagName;
 
+                if (node && node.getAttribute('data-medium-element') && node.children.length === 0
+                        && !(self.options.disableReturn || node.getAttribute('data-disable-return'))) {
+                    document.execCommand('formatBlock', false, 'p');
+                }
+
                 if (e.which === 13 && !e.shiftKey) {
                     node = getSelectionStart();
                     tagName = node.tagName.toLowerCase();
